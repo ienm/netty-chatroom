@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ChatClient {
     public static void main(String[] args) {
         NioEventLoopGroup group = new NioEventLoopGroup();
-        LoggingHandler LOGGINGHANDLER = new LoggingHandler();
+//        LoggingHandler LOGGINGHANDLER = new LoggingHandler();
         MessageCodecSharable MESSAGE_CODEC = new MessageCodecSharable();
         CountDownLatch WAIT_FOR_LOGIN = new CountDownLatch(1);
         AtomicBoolean LOGIN = new AtomicBoolean(false);
@@ -34,7 +34,7 @@ public class ChatClient {
                 @Override
                 protected void initChannel(NioSocketChannel ch) throws Exception {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
-                    ch.pipeline().addLast(LOGGINGHANDLER);
+//                    ch.pipeline().addLast(LOGGINGHANDLER);
                     ch.pipeline().addLast(MESSAGE_CODEC);
                     ch.pipeline().addLast("client handler",new ChannelInboundHandlerAdapter(){
                         @Override
@@ -116,6 +116,10 @@ public class ChatClient {
                             if(msg instanceof LoginResponseMessage){
                                 LoginResponseMessage responseMessage = (LoginResponseMessage) msg;
                                 LOGIN.set(responseMessage.isSuccess());
+                            }
+                            if (msg instanceof ChatResponseMessage){
+                                ChatResponseMessage responseMessage = (ChatResponseMessage) msg;
+                                System.out.println("from:--"+responseMessage.getFrom()+""+"\n"+"content:--"+responseMessage.getContent());
                             }
                             WAIT_FOR_LOGIN.countDown();
                         }
