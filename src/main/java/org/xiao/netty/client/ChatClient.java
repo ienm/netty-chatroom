@@ -1,13 +1,13 @@
 package org.xiao.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.xiao.netty.message.*;
 import org.xiao.netty.protocol.MessageCodecSharable;
 import org.xiao.netty.protocol.ProtocolFrameDecoder;
@@ -36,6 +36,24 @@ public class ChatClient {
                     ch.pipeline().addLast(new ProtocolFrameDecoder());
 //                    ch.pipeline().addLast(LOGGINGHANDLER);
                     ch.pipeline().addLast(MESSAGE_CODEC);
+
+                    //发送心跳包
+                    // 3秒内没有向 服务器 写数据 IdleState#WRITE—IDLE事件
+                    ch.pipeline().addLast(new IdleStateHandler(5,0,0));
+                    ch.pipeline().addLast(new ChannelDuplexHandler() {
+                        // 触发特殊事件
+                        @Override
+                        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+//                            super.userEventTriggered(ctx, evt);
+                            IdleStateEvent even = (IdleStateEvent) evt;
+
+                            if (even.state() == IdleState.WRITER_IDLE){
+                                System.out.println("3s 未写入数据 发送心跳包");
+                                ctx.writeAndFlush(new PingMessage());
+                            }
+                        }
+                    });
+
                     ch.pipeline().addLast("client handler",new ChannelInboundHandlerAdapter(){
                         @Override
                         //连接建立动作 建立后处罚active

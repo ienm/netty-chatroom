@@ -6,6 +6,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.xiao.netty.server.handler.ChatRequestMessageHandler;
 import org.xiao.netty.server.handler.LoginRequestMessageHandler;
 import org.xiao.netty.protocol.MessageCodecSharable;
@@ -37,6 +40,23 @@ public class ChatServer {
 //                    ch.pipeline().addLast(LOGGINGHANDLER);
                     ch.pipeline().addLast(MESSAGE_CODEC);
                     ch.pipeline().addLast(LOGIN_HANDLER);
+
+                    //心跳检测
+                    // 5秒内没有 收到 channel 数据 触发yige IdleState#READER—IDLE事件
+                    ch.pipeline().addLast(new IdleStateHandler(5,0,0));
+                    ch.pipeline().addLast(new ChannelDuplexHandler() {
+                        // 触发特殊事件
+                        @Override
+                        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+//                            super.userEventTriggered(ctx, evt);
+                            IdleStateEvent even = (IdleStateEvent) evt;
+
+                            if (even.state() == IdleState.READER_IDLE){
+                                System.out.println("5s 未收到数据");
+                            }
+                        }
+                    });
+
                     //单聊功能
                     ch.pipeline().addLast(CHAT_HANDLER);
                     //群聊功能
