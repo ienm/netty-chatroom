@@ -10,6 +10,7 @@ import org.xiao.netty.server.handler.ChatRequestMessageHandler;
 import org.xiao.netty.server.handler.LoginRequestMessageHandler;
 import org.xiao.netty.protocol.MessageCodecSharable;
 import org.xiao.netty.protocol.ProtocolFrameDecoder;
+import org.xiao.netty.server.handler.group.*;
 
 public class ChatServer {
     public static void main(String[] args) {
@@ -19,6 +20,12 @@ public class ChatServer {
         LoginRequestMessageHandler LOGIN_HANDLER = new LoginRequestMessageHandler();
         ChatRequestMessageHandler CHAT_HANDLER = new ChatRequestMessageHandler();
         MessageCodecSharable MESSAGE_CODEC = new MessageCodecSharable();
+        GroupCreateRequestMessageHandler GROUP_CREATE_HANDLER = new GroupCreateRequestMessageHandler();
+        GroupJoinRequestMessageHandler GROUP_JOIN_HANDLER = new GroupJoinRequestMessageHandler();
+        GroupMembersRequestMessageHandler GROUP_MEMBER_HANDLER = new GroupMembersRequestMessageHandler();
+        GroupQuitRequestMessageHandler GROUP_QUIT_HANDLER = new GroupQuitRequestMessageHandler();
+        GroupChatRequestMessageHandler GROUP_CHAT_HANDLER = new GroupChatRequestMessageHandler();
+
         try{
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.channel(NioServerSocketChannel.class);
@@ -30,7 +37,14 @@ public class ChatServer {
 //                    ch.pipeline().addLast(LOGGINGHANDLER);
                     ch.pipeline().addLast(MESSAGE_CODEC);
                     ch.pipeline().addLast(LOGIN_HANDLER);
+                    //单聊功能
                     ch.pipeline().addLast(CHAT_HANDLER);
+                    //群聊功能
+                    ch.pipeline().addLast(GROUP_CREATE_HANDLER);
+                    ch.pipeline().addLast(GROUP_JOIN_HANDLER);
+                    ch.pipeline().addLast(GROUP_CHAT_HANDLER);
+                    ch.pipeline().addLast(GROUP_MEMBER_HANDLER);
+                    ch.pipeline().addLast(GROUP_QUIT_HANDLER);
                 }
             });
             Channel channel = serverBootstrap
