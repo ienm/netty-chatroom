@@ -16,7 +16,7 @@ public class TestMessageCodec {
                 new LengthFieldBasedFrameDecoder(1024,12,4,0,0),
                 new MessageCodec());
 
-        LoginRequestMessage requestMessage = new LoginRequestMessage("zhangshan","123","张山");
+        LoginRequestMessage requestMessage = new LoginRequestMessage("zhangshan","123");
 //        channel.writeOutbound(requestMessage);
 
         ByteBuf buf = ByteBufAllocator.DEFAULT.buffer();
