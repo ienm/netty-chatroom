@@ -13,6 +13,7 @@ import org.xiao.netty.server.handler.ChatRequestMessageHandler;
 import org.xiao.netty.server.handler.LoginRequestMessageHandler;
 import org.xiao.netty.protocol.MessageCodecSharable;
 import org.xiao.netty.protocol.ProtocolFrameDecoder;
+import org.xiao.netty.server.handler.QuiteHandler;
 import org.xiao.netty.server.handler.group.*;
 
 public class ChatServer {
@@ -28,6 +29,7 @@ public class ChatServer {
         GroupMembersRequestMessageHandler GROUP_MEMBER_HANDLER = new GroupMembersRequestMessageHandler();
         GroupQuitRequestMessageHandler GROUP_QUIT_HANDLER = new GroupQuitRequestMessageHandler();
         GroupChatRequestMessageHandler GROUP_CHAT_HANDLER = new GroupChatRequestMessageHandler();
+        QuiteHandler QUITE_HANDLER = new QuiteHandler();
 
         try{
             ServerBootstrap serverBootstrap = new ServerBootstrap();
@@ -56,6 +58,8 @@ public class ChatServer {
                             }
                         }
                     });
+
+                    ch.pipeline().addLast(QUITE_HANDLER);
 
                     //单聊功能
                     ch.pipeline().addLast(CHAT_HANDLER);
